@@ -32,6 +32,9 @@ export default function Home() {
   const [uploadFile, setUploadFile] = useState(null);
   const [uploadName, setUploadName] = useState("");
   
+  const [status, setStatus] = useState("idle");
+  const [results, setResults] = useState(null);
+  const [errorMsg, setErrorMsg] = useState("");
   const [expandedPop, setExpandedPop] = useState(null);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const [settings, setSettings] = useState({
