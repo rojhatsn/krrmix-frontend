@@ -32,11 +32,13 @@ export default function Home() {
   const [uploadFile, setUploadFile] = useState(null);
   const [uploadName, setUploadName] = useState("");
   
-  const [status, setStatus] = useState("idle");
-  const [results, setResults] = useState(null);
-  const [errorMsg, setErrorMsg] = useState("");
-  
   const [expandedPop, setExpandedPop] = useState(null);
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+  const [settings, setSettings] = useState({
+    kernel: { type: "linear", alpha: 1.0, gamma: null },
+    mahalanobis: { significance_threshold: 0.05 },
+    aggregation: { n_bootstrap: 5000, ci_level: 0.95, rng_seed: 42 }
+  });
 
   const fileInputRef = useRef(null);
   const srcDropdownRef = useRef(null);
@@ -118,7 +120,10 @@ export default function Home() {
         body: JSON.stringify({
           sources: selectedSources,
           target: runTarget,
-          is_custom: isCustom
+          is_custom: isCustom,
+          kernel: settings.kernel,
+          mahalanobis: settings.mahalanobis,
+          aggregation: settings.aggregation
         })
       });
 
@@ -304,6 +309,84 @@ export default function Home() {
             );
           })()}
         </div>
+      </div>
+
+      <div style={{maxWidth: "800px", margin: "0 auto"}}>
+        <button 
+          className="advanced-panel-toggle" 
+          onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
+        >
+          {isAdvancedOpen ? "− Hide Advanced Settings" : "+ Show Advanced Settings (Kernel, Mahalanobis, Bootstrap)"}
+        </button>
+
+        {isAdvancedOpen && (
+          <div className="advanced-settings-grid glass-panel" style={{background: "rgba(0,0,0,0.15)", borderRadius: "16px"}}>
+            <div className="setting-group">
+              <h3>Kernel Ridge</h3>
+              <div className="setting-field">
+                <label>Type</label>
+                <select 
+                  className="input-small"
+                  value={settings.kernel.type}
+                  onChange={e => setSettings({...settings, kernel: {...settings.kernel, type: e.target.value}})}
+                >
+                  <option value="linear">Linear (Default)</option>
+                  <option value="rbf">RBF (Radial Basis)</option>
+                  <option value="poly">Polynomial</option>
+                </select>
+              </div>
+              <div className="setting-field">
+                <label>Alpha (Regularization)</label>
+                <input 
+                  type="number" 
+                  step="0.1"
+                  className="input-small"
+                  value={settings.kernel.alpha}
+                  onChange={e => setSettings({...settings, kernel: {...settings.kernel, alpha: parseFloat(e.target.value)}})}
+                />
+              </div>
+            </div>
+
+            <div className="setting-group">
+              <h3>Outlier Detection</h3>
+              <div className="setting-field">
+                <label>Mahalanobis Threshold</label>
+                <input 
+                  type="number" 
+                  step="0.01"
+                  className="input-small"
+                  value={settings.mahalanobis.significance_threshold}
+                  onChange={e => setSettings({...settings, mahalanobis: {...settings.mahalanobis, significance_threshold: parseFloat(e.target.value)}})}
+                />
+              </div>
+            </div>
+
+            <div className="setting-group">
+              <h3>Bootstrap Aggregation</h3>
+              <div className="setting-field">
+                <label>N Bootstraps</label>
+                <input 
+                  type="number" 
+                  step="100"
+                  className="input-small"
+                  value={settings.aggregation.n_bootstrap}
+                  onChange={e => setSettings({...settings, aggregation: {...settings.aggregation, n_bootstrap: parseInt(e.target.value)}})}
+                />
+              </div>
+              <div className="setting-field">
+                <label>Confidence Level</label>
+                <input 
+                  type="number" 
+                  step="0.01"
+                  max="1.0"
+                  className="input-small"
+                  value={settings.aggregation.ci_level}
+                  onChange={e => setSettings({...settings, aggregation: {...settings.aggregation, ci_level: parseFloat(e.target.value)}})}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div style={{textAlign: "center", marginTop: "40px"}}>
